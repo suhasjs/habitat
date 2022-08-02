@@ -277,7 +277,7 @@ class NewCuptiProfiler::State {
           metrics_context_, chip_name_, {metric}, inserted.first->second)) {
       throw std::runtime_error("Failed to create counter_data_image_prefix!");
     }
-#elif (CUDA_VERSION == 10020) || (CUDA_VERSION == 11010) || (CUDA_VERSION == 11030) || (CUDA_VERSION == 11060)
+#elif (CUDA_VERSION >= 10020)
     if (!NV::Metric::Config::GetCounterDataPrefixImage(
           chip_name_, {metric}, inserted.first->second)) {
       throw std::runtime_error("Failed to create counter_data_image_prefix!");
