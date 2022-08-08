@@ -1,5 +1,7 @@
-FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+FROM nvidia/cuda:11.6.1-cudnn8-devel-ubuntu20.04
 MAINTAINER Geoffrey Yu <gxyu@cs.toronto.edu>
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 
 RUN apt-get update --fix-missing && \
   apt-get install --no-install-recommends -y software-properties-common && \
@@ -10,12 +12,8 @@ RUN apt-get update --fix-missing && \
   rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install wheel && pip3 install numpy PyYAML
-RUN pip3 install \
-  torch==1.4.0 \
-  pillow==7.2.0 \
-  torchvision==0.5.0 \
-  pandas==1.1.2 \
-  tqdm==4.49.0
+RUN pip3 install torch==1.8.2 torchvision==0.9.2 torchaudio==0.8.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cu111
+RUN pip3 install pillow>=7.2.0 pandas>=1.1.2 tqdm>=4.49.0
 
 # Download cmake
 RUN wget "https://github.com/Kitware/CMake/releases/download/v3.17.0-rc1/cmake-3.17.0-rc1.tar.gz" -O /opt/cmake-3.17.0-rc1.tar.gz && \
@@ -24,7 +22,7 @@ RUN wget "https://github.com/Kitware/CMake/releases/download/v3.17.0-rc1/cmake-3
 # Install cmake
 RUN cd /opt/cmake-3.17.0-rc1 && \
   ./bootstrap && \
-  make -j 16 && \
+  make -j && \
   make install
 
 # NOTE: gosu is used in create-user.sh

@@ -1,2 +1,2 @@
 VARS_FILE_LOCATION=$(cd $(dirname $0) && pwd -P)
-IMAGE_NAME=habitat-cuda10.1-cudnn7
+IMAGE_NAME=docker.pdl.cmu.edu/habitat-cuda11.6-cudnn8-devel-ubuntu20.04
