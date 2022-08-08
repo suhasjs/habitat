@@ -10,6 +10,8 @@ analyzer/habitat/data/README.md
 analyzer/habitat/data/kernels.sqlite
 analyzer/habitat/data/**/*.pth
 
+experiments/*.csv
+
 # Python
 *.pyc
 __pycache__
