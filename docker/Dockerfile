@@ -16,14 +16,21 @@ RUN pip3 install torch==1.8.2 torchvision==0.9.2 torchaudio==0.8.2 --extra-index
 RUN pip3 install pillow>=7.2.0 pandas>=1.1.2 tqdm>=4.49.0
 
 # Download cmake
-RUN wget "https://github.com/Kitware/CMake/releases/download/v3.17.0-rc1/cmake-3.17.0-rc1.tar.gz" -O /opt/cmake-3.17.0-rc1.tar.gz && \
-  cd /opt && tar xzf cmake-3.17.0-rc1.tar.gz
+# RUN wget "https://github.com/Kitware/CMake/releases/download/v3.17.0-rc1/cmake-3.17.0-rc1.tar.gz" -O /opt/cmake-3.17.0-rc1.tar.gz && \
+#  cd /opt && tar xzf cmake-3.17.0-rc1.tar.gz
 
 # Install cmake
-RUN cd /opt/cmake-3.17.0-rc1 && \
-  ./bootstrap && \
-  make -j && \
-  make install
+#RUN cd /opt/cmake-3.17.0-rc1 && \
+#  ./bootstrap && \
+#  make -j && \
+#  make install
+
+#iInstall latest cmake
+ADD https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-linux-x86_64.sh /cmake-3.24.0-linux-x86_64.sh
+RUN mkdir /opt/cmake
+RUN sh /cmake-3.24.0-linux-x86_64.sh --prefix=/opt/cmake --skip-license
+RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+RUN cmake --version
 
 # NOTE: gosu is used in create-user.sh
 RUN mkdir ~/.gnupg && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf

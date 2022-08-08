@@ -18,6 +18,7 @@ DEVICES = [
     habitat.Device.P4000,
     habitat.Device.P100,
     habitat.Device.V100,
+    habitat.Device.A100,
     habitat.Device.T4,
     habitat.Device.RTX2070,
     habitat.Device.RTX2080Ti,
