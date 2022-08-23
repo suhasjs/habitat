@@ -3,6 +3,7 @@ import pandas as pd
 import glob
 import functools
 from tqdm import tqdm
+import os
 
 from habitat.analysis.mlp.devices import get_device_features, get_all_devices
 
@@ -19,11 +20,12 @@ def get_dataset(path, features, device_features=None):
 
     # read datasets
     files = glob.glob(path + "/*.sqlite")
+    print(f"Found files: {files} @ {path}/*.sqlite")
 
     # read individual sqlite files and categorize by device
     devices = dict()
     for f in files:
-        device_name = f.split("/")[-1].split("-")[1]
+        device_name = os.path.basename(f).split("-")[1].split(".")[0]
 
         conn = sqlite3.connect(f)
         query = SELECT_QUERY.format(features=",".join(features))
@@ -52,13 +54,14 @@ def get_dataset(path, features, device_features=None):
     print("Generating dataset")
     # generate vectorized dataset (one entry for each device with device params)
     device_params = get_all_devices(device_features)
+    print(f"Devices: {device_params.keys()}")
 
     x, y = [], []
     for device in devices.keys():
+        print(f"Processing data for device: {device}")
         df_merged_device = df_merged[features + [device, ]]
         for row in tqdm(df_merged_device.iterrows(), leave=False, desc=device, total=len(df_merged_device.index)):
             row = row[1]
-
             x.append(list(row[:-1]) + device_params[device])
             y.append(row[-1])
 

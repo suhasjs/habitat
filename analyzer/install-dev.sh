@@ -29,7 +29,7 @@ function compile_habitat_cuda() {
   mkdir -p build
   pushd build
 
-  cmake -DCMAKE_BUILD_TYPE=Release ..
+  cmake -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_BUILD_TYPE=Release ..
   make -j habitat_cuda
 
   if [ ! -f $SO_NAME ]; then
@@ -85,7 +85,8 @@ function main() {
   if [ "$1" = "--uninstall" ]; then
     uninstall_habitat
   else
-	install_cupti_sample
+	  install_cupti_sample
+    echo "Installing habitat"
     check_prereqs
     compile_habitat_cuda
     symlink_habitat_cuda

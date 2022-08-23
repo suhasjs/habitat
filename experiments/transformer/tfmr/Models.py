@@ -200,11 +200,13 @@ class Transformer(nn.Module):
             self.encoder.src_word_emb.weight = self.decoder.tgt_word_emb.weight
 
     def forward(self, src_seq, src_pos, tgt_seq, tgt_pos):
-
+        print(f"Starting forward")
         tgt_seq, tgt_pos = tgt_seq[:, :-1], tgt_pos[:, :-1]
 
         enc_output, *_ = self.encoder(src_seq, src_pos)
+        print(f"Got encoder output")
         dec_output, *_ = self.decoder(tgt_seq, tgt_pos, src_seq, enc_output)
+        print(f"Got decoder output")
 
         if self.tgt_emb_prj_weight_sharing:
             # NOTE: Workaround to prevent weight sharing among modules (for JIT tracing)
@@ -213,4 +215,5 @@ class Transformer(nn.Module):
             seq_logit = self.tgt_word_prj(dec_output)
 
         seq_logit = seq_logit * self.x_logit_scale
+        print(f"fwd done")
         return seq_logit.view(-1, seq_logit.size(2))

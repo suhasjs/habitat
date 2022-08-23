@@ -1,6 +1,9 @@
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04
+# Upgrade to cuda=11.6, cudnn=8, ubuntu=20.04
+FROM nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04
+# FROM nvcr.io/nvidia/pytorch:21.10-py3
 MAINTAINER Geoffrey Yu <gxyu@cs.toronto.edu>
 RUN apt-get update
+
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 
 RUN apt-get update --fix-missing && \
@@ -9,10 +12,12 @@ RUN apt-get update --fix-missing && \
   apt-get install --no-install-recommends -y sudo && \
   apt-get install --no-install-recommends -y python3-pip python3-setuptools python3-dev && \
   apt-get install --no-install-recommends -y wget bzip2 ca-certificates libssl-dev && \
+  apt-get install -y tmux vim git && \
   rm -rf /var/lib/apt/lists/*
 
+# Upgrade to torch 1.12.1, cuda=11.6
 RUN pip3 install wheel && pip3 install numpy PyYAML
-RUN pip3 install torch==1.8.2 torchvision==0.9.2 torchaudio==0.8.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cu111
+RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 RUN pip3 install pillow>=7.2.0 pandas>=1.1.2 tqdm>=4.49.0
 
 # Download cmake
@@ -25,7 +30,7 @@ RUN pip3 install pillow>=7.2.0 pandas>=1.1.2 tqdm>=4.49.0
 #  make -j && \
 #  make install
 
-#iInstall latest cmake
+# Install latest cmake using script
 ADD https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-linux-x86_64.sh /cmake-3.24.0-linux-x86_64.sh
 RUN mkdir /opt/cmake
 RUN sh /cmake-3.24.0-linux-x86_64.sh --prefix=/opt/cmake --skip-license

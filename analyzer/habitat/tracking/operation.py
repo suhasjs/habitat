@@ -44,6 +44,7 @@ class OperationTracker(TrackerBase):
                 # We only track the arguments if the operation is "special"
                 # (i.e. we use special handling to scale it to a different
                 # device).
+                print(f"TEST: ----------------> {func.__name__}")
                 is_special_op = func.__name__ in SPECIAL_OPERATIONS
                 arguments = (
                     Arguments.from_raw_arguments(args, kwargs)
@@ -56,11 +57,20 @@ class OperationTracker(TrackerBase):
                     # operation
                     arguments.special['batch_sizes'] = args[1].tolist()
 
+                print(f"Profiling opeartion : {func.__name__}")
                 forward, backward = self._profiler.measure_operation(
                     func,
                     args,
                     kwargs,
                 )
+                fwd_ms = forward._run_time_ms if forward is not None else None
+                kernels = []
+                if forward is not None:
+                    kernels.extend([k.name for k in forward._kernels])
+                bwd_ms = backward._run_time_ms if backward is not None else None
+                if backward is not None:
+                    kernels.extend([k.name for k in backward._kernels])
+                print(f"Operation profiled.. exec hooked fn : {func.__name__}, fwd={fwd_ms}, bwd={bwd_ms}, kernels={kernels}")
                 self._operations.append(MeasuredOperation(
                     name=func.__name__,
                     arguments=arguments,
@@ -70,8 +80,11 @@ class OperationTracker(TrackerBase):
                 ))
 
                 # Actually run the hooked function
-                return func(*args, **kwargs)
+                result = func(*args, **kwargs)
+                print(f"Finished hooked fn exec")
+                return result
             finally:
                 self._processing_hook = False
+                print(f"Failed hooked fn exec")
 
         return hook

@@ -82,6 +82,7 @@ class Predictor:
 
 
     def predict_operation(self, operation, dest_device):
+        # print(f"Predicting {operation.name} on {dest_device.name}")
         if operation.name not in SPECIAL_OPERATIONS:
             return PredictedOperation(
                 operation,

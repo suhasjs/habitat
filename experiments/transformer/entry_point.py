@@ -1,23 +1,35 @@
+import code
+import signal
+signal.signal(signal.SIGUSR2, lambda sig, frame: code.interact())
+
 import argparse
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+from torchinfo import summary
 
 import transformer.tfmr.Constants as Constants
 from transformer.tfmr.Models import Transformer
 from transformer.tfmr.Optim import ScheduledOptim
 
-torch.backends.cudnn.benchmark = True
+import numpy as np
 
+torch.backends.cudnn.benchmark = True
 
 class TransformerWithLoss(torch.nn.Module):
     def __init__(self, transformer):
         super().__init__()
         self.transformer = transformer
+        bsz=32
+        summary(self, input_size=[(bsz, 50), (bsz, 50), (bsz, 50), (bsz, 50), (bsz, 49)], 
+                      dtypes=[torch.int64,torch.int64,torch.int64,torch.int64,torch.int64],
+                      col_names=["input_size", "output_size", "num_params", "kernel_size"],
+                      mode='train')
 
     def _cal_loss(self, pred, gold, smoothing):
         ''' Calculate cross entropy loss, apply label smoothing if needed. '''
+        print(f"Computing loss")
 
         gold = gold.contiguous().view(-1)
 
@@ -35,11 +47,15 @@ class TransformerWithLoss(torch.nn.Module):
         else:
             loss = F.cross_entropy(
                 pred, gold, ignore_index=Constants.PAD, reduction='sum')
+        print(f"Finished computing forward")
 
         return loss
 
     def forward(self, src_seq, src_pos, tgt_seq, tgt_pos, gold):
+        print(f"Input shapes: src_seq={src_seq.shape}, src_pos={src_pos.shape}, tgt_seq={tgt_seq.shape}, tgt_pos={tgt_pos.shape}, gold={gold.shape}")
+        # print(f"Input types: src_seq={src_seq.dtype}, src_pos={src_pos.dtype}, tgt_seq={tgt_seq.dtype}, tgt_pos={tgt_pos.dtype}, gold={gold.dtype}")
         out = self.transformer(src_seq, src_pos, tgt_seq, tgt_pos)
+        print(f"Finished forward")
         return self._cal_loss(out, gold, smoothing=True)
 
 
@@ -105,6 +121,7 @@ def skyline_model_provider():
 
 
 def skyline_input_provider(batch_size=64):
+    print(f"Preparing input...")
     vocab_size = 32000
     src_seq_len = 50
     tgt_seq_len = 50
@@ -138,6 +155,7 @@ def skyline_input_provider(batch_size=64):
     tgt_pos = torch.cat(target_pos_list, 0)
 
     gold = target[:, 1:]
+    print(f"Preparing input... done.")
     return source, src_pos, target, tgt_pos, gold
 
 
@@ -150,9 +168,15 @@ def skyline_iteration_provider(transformer):
         opt.d_model, opt.n_warmup_steps)
 
     def iteration(src_seq, src_pos, tgt_seq, tgt_pos, gold):
+        print(f"Running minibatch... zeroing grad")
         optimizer.zero_grad()
+        print(f"Finished zeroing grad... starting fwd")
         loss = transformer(src_seq, src_pos, tgt_seq, tgt_pos, gold)
+        print(f"fwd done... starting backward..")
         loss.backward()
+        print(f"bwd done.. starting optim.step..")
         optimizer.step_and_update_lr()
+        # torch.cuda.empty_cache()
+        print(f"Finished iteration")
 
     return iteration

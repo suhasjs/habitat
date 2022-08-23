@@ -35,6 +35,7 @@ class Generation(enum.Enum):
 
 DEVICE_GENERATION = {
     'RTX2080Ti': Generation.Turing,
+    'QRTX6000': Generation.Turing,
     'RTX2070': Generation.Turing,
     'T4': Generation.Turing,
     'V100': Generation.Volta,
@@ -295,13 +296,14 @@ def main():
     device_info = load_device_info(args)
 
     output_file = '{}-torch-dataset.pt'.format(args.operation)
-    if os.path.exists(output_file):
-        print(
-            'ERROR: The output file {} already exists. '
-            'Aborting to avoid overwriting.'.format(output_file),
-            file=sys.stderr,
-        )
-        sys.exit(1)
+    # bypassing check and over-writing dataset
+    #if os.path.exists(output_file):
+    #    print(
+    #        'ERROR: The output file {} already exists. '
+    #        'Aborting to avoid overwriting.'.format(output_file),
+    #        file=sys.stderr,
+    #    )
+    #    sys.exit(1)
 
     # 1. Select all data from the combined SQLite data files and merge the
     #    entries together so that we have measurements for all devices.

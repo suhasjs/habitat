@@ -37,6 +37,7 @@ add_subdirectory(src)
 # Specify dependencies for each target
 target_link_libraries(${HabitatCUDA} PRIVATE habitat-cuda-lib)
 set(HabitatCUDATransitiveDeps habitat-cuda-lib cupti_profilerhost_util)
+set_target_properties(habitat-cuda-lib PROPERTIES CUDA_ARCHITECTURES "75;80;86")
 target_link_libraries(${DeviceInfo} PRIVATE CUDA::cudart gflags::gflags)
 
 # Since pybind11 modules are shared libraries, all the static libraries it

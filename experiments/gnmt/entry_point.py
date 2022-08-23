@@ -320,8 +320,12 @@ def skyline_iteration_provider(model):
     fp_optimizer = Fp32Optimizer(model, args.grad_clip)
 
     def iteration(src, src_len, tgt, tgt_len):
+        print(f"Running minibatch.. fwd")
         loss = model(src, src_len, tgt, tgt_len)
+        print(f"Running minibatch.. bwd")
         loss.backward()
+        print(f"Running optim.step")
         fp_optimizer.step(optimizer, scheduler, update=True)
+        print(f"Done")
 
     return iteration

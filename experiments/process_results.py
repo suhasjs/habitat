@@ -17,6 +17,7 @@ DEVICES = [
     'P100',
     'V100',
     'A100',
+    'QRTX6000',
 ]
 
 E2E_FILE = re.compile(

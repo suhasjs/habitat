@@ -12,6 +12,8 @@ class KernelProfiler:
     def __init__(self, device, metrics=None, metrics_threshold_ms=0):
         self._device = device
         self._metrics = resolve_metrics(metrics, self._device)
+        # self._metrics=[]
+        print(f"Kernel profiler: {device}, metrics={metrics}")
         self._metrics_threshold_ns = metrics_threshold_ms * 1000000
 
     def measure_kernels(self, runnable, func_name=None):

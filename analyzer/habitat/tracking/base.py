@@ -9,8 +9,10 @@ class TrackerBase:
     def track(self):
         self.start_tracking()
         try:
+            print(f"Starting to track...")
             yield self
         finally:
+            print(f"tracking done.. stopping tracking")
             self.stop_tracking()
 
     def start_tracking(self):

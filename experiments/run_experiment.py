@@ -10,6 +10,7 @@ import habitat
 from habitat.analysis import SPECIAL_OPERATIONS
 from habitat.profiling.run_time import RunTimeProfiler
 
+
 ###############################################################################
 
 # Experiment configuration
@@ -22,6 +23,7 @@ DEVICES = [
     habitat.Device.T4,
     habitat.Device.RTX2070,
     habitat.Device.RTX2080Ti,
+    habitat.Device.QRTX6000,
 ]
 
 RESNET50_BATCHES = [16, 32, 64]
@@ -63,6 +65,7 @@ def record_breakdown(config_name, origin_device, dest_device, trace):
 
 def compute_threshold(runnable, context):
     tracker = habitat.OperationTracker(context.origin_device)
+ 
     with tracker.track():
         runnable()
 
@@ -81,6 +84,7 @@ def compute_threshold(runnable, context):
 def run_experiment_config(config_name, runnable, context):
     print('Processing:', config_name)
     origin_run_time_ms = context.profiler.measure_ms(runnable)
+    print(f"Measured runtime for {config_name} on {context.origin_device} = {origin_run_time_ms}ms") 
     e2e_results = [(context.origin_device, origin_run_time_ms)]
 
     threshold = compute_threshold(runnable, context)
@@ -93,8 +97,10 @@ def run_experiment_config(config_name, runnable, context):
         ],
         metrics_threshold_ms=threshold,
     )
+    print(f"Enabled tracking..")
     with tracker.track():
         runnable()
+    print(f"Traced ops on {context.origin_device}")
 
     trace = tracker.get_tracked_trace()
     record_breakdown(
@@ -104,6 +110,7 @@ def run_experiment_config(config_name, runnable, context):
         trace,
     )
 
+    print(f"Starting cross-device prediction")
     for device in DEVICES:
         if device.name == context.origin_device.name:
             continue
@@ -203,6 +210,8 @@ def run_transformer_experiments(context):
     iteration = tep.skyline_iteration_provider(model)
 
     for batch_size in TRANSFORMER_BATCHES:
+        model = tep.skyline_model_provider()
+        iteration = tep.skyline_iteration_provider(model)
         inputs = tep.skyline_input_provider(batch_size=batch_size)
 
         def runnable():
@@ -236,11 +245,11 @@ def main():
         percentile=args.percentile,
     )
 
-    run_dcgan_experiments(context)
-    run_inception_experiments(context)
-    run_resnet50_experiments(context)
-    run_gnmt_experiments(context)
     run_transformer_experiments(context)
+    run_gnmt_experiments(context)
+    run_dcgan_experiments(context)
+    run_resnet50_experiments(context)
+    run_inception_experiments(context)
 
 
 if __name__ == '__main__':
